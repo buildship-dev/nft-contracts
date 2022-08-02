@@ -197,9 +197,22 @@ contract MetaverseBaseNFT is
         price = _price;
     }
 
-    // Freeze forever, irreversible
-    function freeze() public onlyOwner {
-        isFrozen = true;
+    function reduceMaxSupply(uint256 _maxSupply)
+        public
+        whenSaleNotStarted
+        onlyOwner
+    {
+        require(
+            _totalMinted() + reserved <= _maxSupply,
+            "maxSupply is too low, already minted more (+ reserved)"
+        );
+
+        require(
+            _maxSupply < maxSupply,
+            "cannot set higher than the current maxSupply"
+        );
+
+        maxSupply = _maxSupply;
     }
 
     // Lock changing withdraw address
@@ -302,6 +315,11 @@ contract MetaverseBaseNFT is
 
     modifier whenSaleStarted() {
         require(saleStarted(), "Sale not started");
+        _;
+    }
+
+    modifier whenSaleNotStarted() {
+        require(!saleStarted(), "Sale should not be started");
         _;
     }
 
